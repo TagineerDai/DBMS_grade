@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}UserInfo{% endblock %}
+
+{% block main %}
+     <style type="text/css">
+
+#info
+  {
+  font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+  width:100%;
+  border-collapse:collapse;
+  }
+
+#info td, #info th
+  {
+  font-size:1em;
+  border:1px solid #177CB0;
+  padding:3px 7px 2px 7px;
+  }
+
+#info th
+  {
+  font-size:1.1em;
+  text-align:left;
+  padding-top:5px;
+  padding-bottom:4px;
+  background-color:#99CCFF;
+  color:#ffffff;
+  }
+
+#info tr:nth-child(odd)
+    {
+    background-color:#E3F9FD;
+    }
+
+</style>
+    <div class="container">
+        <div class="table-responsive" style="padding-top: 30px">
+		{% if role == 'admin'%}
+            {% if Prompt %}
+                {{ Prompt }}
+            {% endif %}
+            <form role="form" action="{{ url('user_info') }}" method="post">
+                {{ csrf_input }}
+                <label for="username-text">用户ID</label>
+                <input type="text" class="form-control" id="userId"
+                   placeholder="请输入您要查询的ID" name="userId"
+                   onKeyPress="if (event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;">
+                <div style="text-align: right; margin-top: 10px" >
+                    <input type="submit" class="btn btn-info" style="width: 100px; margin:right" name="submit" value="Submit">
+                </div>
+            {% if (not AddTeacher) and (not AddStudent) %}
+                <label for="username-text">个人信息</label>
+                <table class="table table-bordered" id="info">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>姓名</th>
+                            <th>角色</th>
+                            <th style="text-align: center">操作</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <td class="student_id">{{ me.idAdminInfo }}</td>
+                        <td>{{ me.username }}</td>
+                        <td> Admin </td>
+                        <td>
+                            <div style="text-align: center;" >
+                            <input type="submit" class="btn btn-info" style="width: 100px; margin:right" name="AddStudent" value="AddStudent">
+                            <input type="submit" class="btn btn-info" style="width: 100px; margin:right" name="AddTeacher" value="AddTeacher">
+                            </div>
+                        </td>
+                    </tbody>
+                </table>
+                {% if student %}
+                    <table class="table table-bordered" id="info">
+                        <thead>
+                        {{ student.idStudentInfo }}
+                        信息如下：
+                        </thead>
+                        <tr>
+                            <th>学生ID</th>
+                            <th>学生姓名</th>
+                            <th>性别</th>
+                            <th>出生日期</th>
+                            <th>所属院系</th>
+                            <th>班级号</th>
+                            <th style="text-align: center">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="student_id">{{ student.idStudentInfo }}</td>
+                                <td>{{ student.sname }}</td>
+                                <td>{{ student.sex }}</td>
+                                <td>{{ student.bdate }}</td>
+                                <td>{{ student.dept }}</td>
+                                <td>{{student.classno}}</td>
+                                <td align="center">
+                                    <button disabled type="submit" class="btn btn-info detail_show" name="modify" style="background:#FFFBF0;border-color: #177CB0;" >
+                                        <a href={{"user_info.html/?mode=modify&stuId=%d"%(student.idStudentInfo)}}> Modify</a>
+                                    </button>
+                                    <button disabled type="submit" class="btn btn-danger delete" style="margin-left: 10px;background:#FCEFE8;border-color: #177CB0;" name="delete" >
+                                        <a href={{"user_info.html/?mode=delete&userId=%d"%(student.idStudentInfo)}}> Delete</a>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                {% elif teacher %}
+                    <table class="table table-bordered" id="info">
+                    <thead>
+                    <tr>
+                        <th>教师ID</th>
+                        <th>教师姓名</th>
+                        <th>性别</th>
+                        <th>所属院系</th>
+                        <th style="text-align: center">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="teacher_id">{{ teacher.idTeacherInfo }}</td>
+                            <td>{{ teacher.tname }}</td>
+                            <td>{{ teacher.sex }}</td>
+                            <td>{{ teacher.dept }}</td>
+                            <td align="center">
+                                    <button disabled type="submit" class="btn btn-info detail_show" name="modify" style="background:#FFFBF0;border-color: #177CB0;" >
+                                        <a href={{"user_info.html/?mode=modify&teacherId=%d"%(teacher.idTeacherInfo)}}> Modify</a>
+                                    </button>
+                                    <button disabled type="submit" class="btn btn-danger delete" style="margin-left: 10px;background:#FCEFE8;border-color: #177CB0;" name="delete" >
+                                        <a href={{"user_info.html/?mode=delete&userId=%d"%(teacher.idTeacherInfo)}}> Delete</a>
+                                    </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                    </table>
+
+                {% else%}
+                    <table class="table table-bordered" id="info">
+                        <label for="username-text">用户信息</label>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>姓名</th>
+                                <th>角色</th>
+                                <th style="text-align: center">操作</th>
+                            </tr>
+                        </thead>
+                        {% for rec in students %}
+                            <tr>
+                                <td class="student_id">{{ rec.idStudentInfo }}</td>
+                                <td>{{ rec.sname }}</td>
+                                <td> student </td>
+                                <td align="center">
+                                    <button disabled type="submit" class="btn btn-info detail_show" name="modify" style="background:#FFFBF0;border-color: #177CB0;" >
+                                        <a href={{"user_info.html/?mode=modify&stuId=%d"%(rec.idStudentInfo)}}> Modify</a>
+                                    </button>
+                                    <button disabled type="submit" class="btn btn-danger delete" style="margin-left: 10px;background:#FCEFE8;border-color: #177CB0;" name="delete" >
+                                        <a href={{"user_info.html/?mode=delete&userId=%d"%(rec.idStudentInfo)}}> Delete</a>
+                                    </button>
+                                </td>
+                        {% endfor %}
+                        {% for rec in teachers %}
+                            <tr>
+                                <td class="teacher_id">{{ rec.idTeacherInfo }}</td>
+                                <td>{{ rec.tname }}</td>
+                                <td style="color: #e2620d"> teacher </td>
+                                <td align="center">
+                                    <button disabled type="submit" class="btn btn-info detail_show" name="modify" style="background:#FFFBF0;border-color: #177CB0;" >
+                                        <a href={{"user_info.html/?mode=modify&teacherId=%d"%(rec.idTeacherInfo)}}> Modify</a>
+                                    </button>
+                                    <button disabled type="submit" class="btn btn-danger delete" style="margin-left: 10px;background:#FCEFE8;border-color: #177CB0;" name="delete" >
+                                        <a href={{"user_info.html/?mode=delete&userId=%d"%(rec.idTeacherInfo)}}> Delete</a>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            {% elif AddStudent %}
+                <table class="table-bordered table" id="info">
+                <thead>
+                学生信息录入
+                </thead>
+                <tbody>
+                    <tr>
+                            <th>学生ID</th>
+                            <th>密码</th>
+                            <th>学生姓名</th>
+                            <th>性别</th>
+                            <th>出生日期</th>
+                            <th>所属院系</th>
+                            <th>班级号</th>
+                    </tr>
+                    <tr>
+                        {% if inModify %}
+                            {{ inModify }}
+                        <td><input disabled type="text" class="form-control" id="midStudentInfo"
+                                name="midStudentInfo" value={{ userId }} ></td>
+                        {% else %}
+                        <td><input required type="text" class="form-control" id="idStudentInfo"
+                                placeholder="请输入学生学号" name="idStudentInfo" 
+                                onKeyPress="if (event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;"></td>
+                        {% endif %}
+                        <td><input required type="password" class="form-control" id="passwd"
+                            placeholder="请输入密码" name="passwd"></td>
+                        <td><input required type="text" class="form-control" id="sname"
+                            placeholder="请输入学生姓名" name="sname"></td>
+                        <td><input required type="text" class="form-control" id="sex"
+                            placeholder="请输入学生性别" name="sex"></td>
+                        <td><input required type="date" class="form-control" id="bdate"
+                            name="bdate"></td>
+                        <td><input required type="text" class="form-control" id="dept"
+                            placeholder="请输入学院" name="dept"></td>
+                        <td><input required type="text" class="form-control" id="classno"
+                            placeholder="请输入班级号" name="classno" 
+                            onKeyPress="if (event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;"></td>
+                    </tr>
+                </tbody>
+                </table>
+                <div style="text-align: right; margin-top: 10px">
+                <button type="submit" class="btn btn-info detail_show" name="stuConfirm"  >
+                    确认
+                </button>
+                </div>
+            {% elif AddTeacher %}
+                <table class="table table-bordered" id="info">
+                <thead>
+                教师信息录入
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>教师ID</th>
+                        <th>密码</th>
+                        <th>教师姓名</th>
+                        <th>性别</th>
+                        <th>所属院系</th>
+                    </tr>
+                    <tr>
+                        {% if inModify %}
+                        <td><input required disabled type="text" class="form-control" id="midTeacherInfo"
+                             name="midTeacherInfo" value={{ userId }}></td>
+                        {% else %}
+                        <td><input required type="text" class="form-control" id="idTeacherInfo"
+                            placeholder="请输入教师工号" name="idTeacherInfo" 
+                            onKeyPress="if (event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;"></td>
+                        {% endif %}
+                        <td><input required type="password" class="form-control" id="passwd"
+                            placeholder="请输入密码" name="passwd"></td>
+                        <td><input type="text" class="form-control" id="tname"
+                            placeholder="请输入教师姓名" name="tname"></td>
+                        <td><input required type="text" class="form-control" id="sex"
+                            placeholder="请输入教师性别" name="sex"></td>
+                        <td><input required type="text" class="form-control" id="dept"
+                            placeholder="请输入学院" name="dept"></td>
+                    </tr>
+                </tbody>
+                </table>
+                <div style="text-align: right; margin-top: 10px">
+                <button type="submit" class="btn btn-info detail_show" name="tchConfirm"  >
+                    确认
+                </button>
+                </div>
+
+            {% endif %}
+        </form>
+		{% elif role == 'teacher'%}
+            <table class="table table-bordered" id="info">
+                <thead>
+                <tr>
+                    <th>教师ID</th>
+                    <th>教师姓名</th>
+                    <th>性别</th>
+                    <th>所属院系</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="teacher_id">{{ me.idTeacherInfo }}</td>
+                        <td>{{ me.tname }}</td>
+                        <td>{{ me.sex }}</td>
+                        <td>{{ me.dept }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+		{% elif role == 'student'%}
+            <table class="table table-bordered" id="info">
+                <thead>
+                <tr>
+                    <th>学生ID</th>
+                    <th>学生姓名</th>
+                    <th>性别</th>
+                    <th>生日</th>
+                    <th>所属院系</th>
+                    <th>班级号</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="student_id">{{ me.idStudentInfo }}</td>
+                        <td>{{ me.sname }}</td>
+                        <td>{{ me.sex }}</td>
+                        <td>{{ me.bdate }}</td>
+                        <td>{{ me.dept }}</td>
+                        <td>{{me.classno}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

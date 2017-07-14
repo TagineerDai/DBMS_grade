@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Grade Information in Graphs{% endblock %}
+
+{% block main %}
+ <style type="text/css">
+
+#info
+  {
+  font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+  width:100%;
+  border-collapse:collapse;
+  }
+
+#info td, #info th
+  {
+  font-size:1em;
+  border:1px solid #177CB0;
+  padding:3px 7px 2px 7px;
+  }
+
+#info th
+  {
+  font-size:1.1em;
+  text-align:left;
+  padding-top:5px;
+  padding-bottom:4px;
+  background-color:#99CCFF;
+  color:#ffffff;
+  }
+
+#info tr:nth-child(odd)
+    {
+    background-color:#E3F9FD;
+    }
+
+</style>
+<div class="container">
+	{% if role == 'admin' %}
+	<div class="form-group">
+		<form role="form" action="{{ url('gradegraph') }}" method="post">
+			<label for="username-text">课程号</label>
+        {{ csrf_input }}
+			<input type="text" class="form-control" id="idCourseInfo"
+               placeholder="请输入课程号" name="idCourseInfo" onKeyPress="if (event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;">
+            <div style="text-align: right; margin-top: 10px" >
+        	<input type="submit" class="btn btn-info" style="width: 100px; margin-left: 5px" name="submit" value="提交">
+            </div>
+		</form>
+	</div>
+	{% endif %}
+
+	{% if role == 'student' %}
+		<div id="student_grade_graph" style="width: 550px; height: 400px; margin: 0 auto"></div>
+	{% elif role == 'teacher' %}
+		<div id="teacher_grade_graph" style="width: 550px; height: 400px; margin: 0 auto"></div>
+	{% elif role == 'admin' %}
+		{% if select %}
+		<div id="course_pie_graph" style="width: 550px; height: 400px; margin: 0 auto"></div>
+		{% endif %}
+	<div class="container">
+        <div class="table-responsive" style="padding-top: 30px">
+            <table class="table table-bordered" id="info">
+                <thead>
+                <label for="username-text">可查询课程</label>
+                </thead>
+                <tr>
+                    <th>ID</th>
+                    <th>课程名称</th>
+                    <th>学时</th>
+                    <th>学分</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for rec in courses %}
+                    <tr>
+                        <td>{{ rec.idCourseInfo}}</td>
+                        <td>{{ rec.cname }}</td>
+                        <td>{{ rec.lhour }}</td>
+                        <td>{{ rec.credit }}</td>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+	<script language="JavaScript">
+		$(document).ready(function() {
+			 var sname = {{ sname | safe }}
+			 var chart = {
+		      type: 'column'
+		   };
+		   var title = {
+		      text: 'Grade'
+		   };
+		   var subtitle = {
+		      text: sname
+		   };
+		   var xAxis = {
+		      type: 'category',
+		      labels: {
+		         rotation: -45,
+		         style: {
+		            fontSize: '13px',
+		            fontFamily: 'Verdana, sans-serif'
+		         }
+		      }
+		   };
+		   var yAxis ={
+		      min: 0,
+		      max: 100,
+		      title: {
+		        text: 'Grade(Full=100)'
+		      }
+		   };
+		   var tooltip = {
+		      pointFormat: 'Grade: <b>{point.y:.1f}</b>'
+		   };
+		   var credits = {
+		      enabled: false
+		   };
+		   var series= [{
+		            name: 'Grade',
+		            data: {{glist | safe }},
+		            dataLabels: {
+		                enabled: true,
+		                rotation: -90,
+		                color: '#FFFFFF',
+		                align: 'right',
+		                format: '{point.y:.1f}',
+		                y: 10,
+		                style: {
+		                    fontSize: '13px',
+		                    fontFamily: 'Verdana, sans-serif'
+		                }
+		            }
+		   }];
+
+		   var json = {};
+		   json.chart = chart;
+		   json.title = title;
+		   json.subtitle = subtitle;
+		   json.xAxis = xAxis;
+		   json.yAxis = yAxis;
+		   json.tooltip = tooltip;
+		   json.credits = credits;
+		   json.series = series;
+		   $('#student_grade_graph').highcharts(json);
+		});
+		</script>
+
+	<script language="JavaScript">
+		$(document).ready(function() {
+		   var chart = {
+		      type: 'column'
+		   };
+		   var title = {
+		      text: 'Grade Column Graph'
+		   };
+		   var yAxis ={
+		      min: 0,
+		      title: {
+		        text: 'student count'
+		      }
+		   };
+		   var tooltip = {
+		      pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>',
+		      shared: true
+		   };
+		   var plotOptions = {
+		      column: {
+		         stacking: 'percent'
+		      }
+		   };
+		   var credits = {
+		      enabled: false
+		   };
+		   var xAxis = {
+		      categories: {{ clist|safe }}
+		   };
+		   var series= {{ glist|safe }};
+
+		   var json = {};
+		   json.chart = chart;
+		   json.title = title;
+		   json.xAxis = xAxis;
+		   json.yAxis = yAxis;
+		   json.tooltip = tooltip;
+		   json.plotOptions = plotOptions;
+		   json.credits = credits;
+		   json.series = series;
+		   $('#teacher_grade_graph').highcharts(json);
+		});
+		</script>
+
+
+<script language="JavaScript">
+	$(document).ready(
+		function() {
+   var chart = {
+       plotBackgroundColor: null,
+       plotBorderWidth: null,
+       plotShadow: false
+   };
+   var title = {
+      text: {{ cname|safe }}
+   };
+   var tooltip = {
+      pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+   };
+   var plotOptions = {
+      pie: {
+         allowPointSelect: true,
+         cursor: 'pointer',
+         dataLabels: {
+            enabled: true,
+            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+            style: {
+               color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+            }
+         }
+      }
+   };
+   var series= [{
+      type: 'pie',
+      name: 'grade',
+      data: {{ glist|safe }}
+   }];
+
+   var json = {};
+   json.chart = chart;
+   json.title = title;
+   json.tooltip = tooltip;
+   json.series = series;
+   json.plotOptions = plotOptions;
+   $('#course_pie_graph').highcharts(json);
+});
+</script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $(".delete").click(function () {
+                alert("存在关联信息的数据不可删除");
+            });
+
+            $(".detail_show").click(function () {
+                var exam_id = $(this).parent().parent().find(".exam_id").text();
+                redirect_url = "/exam/point/?exam_id=" + exam_id;
+                window.location.href = redirect_url;
+            }); 
+            $(".submit").click(function () {
+            	alert("Hello~");
+            });
+        });
+    </script>
+{% endblock %}

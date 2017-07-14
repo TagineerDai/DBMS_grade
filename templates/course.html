@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}课程信息{% endblock %}
+
+{% block main %}
+     <style type="text/css">
+
+#info
+  {
+  font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+  width:100%;
+  border-collapse:collapse;
+  }
+
+#info td, #info th
+  {
+  font-size:1em;
+  border:1px solid #177CB0;
+  padding:3px 7px 2px 7px;
+  }
+
+#info th
+  {
+  font-size:1.1em;
+  text-align:left;
+  padding-top:5px;
+  padding-bottom:4px;
+  background-color:#99CCFF;
+  color:#ffffff;
+  }
+
+#info tr:nth-child(odd)
+    {
+    background-color:#E3F9FD;
+    }
+
+</style>
+    <div class="container">
+        <div class="table-responsive" style="padding-top: 30px">
+        <form role="form" action="{{ url('course_info') }}" method="post">
+            {{ csrf_input }}
+            <table class="table table-bordered" id="info">
+                <thead>
+                    <label for="username-text">现有课程列表</label>
+                </thead>
+                {% if Prompt %}
+                    {{ Prompt }}
+                {% endif %}
+                {% if role == 'admin' %}
+                    <div style="text-align: right; margin-top: 10px;margin-bottom: 10px">
+                        <button disabled type="submit" class="btn btn-info" style="margin-left: 10px;" >
+                        <a style="text-decoration: none;color:#cffcff;" href={{ "course.html/?mode=Add" }}>添加课程</a>
+                        </button>
+                    </div>
+                {% endif %}
+                <tr>
+                    <th>课程ID</th>
+                    <th>课程名称</th>
+                    <th>学时</th>
+                    <th>学分</th>
+                    <th>学期</th>
+                    {% if role == 'admin' %}
+                        <th style="text-align: center">操作</th>
+                    {% endif %}
+                    {% if inAdd %}
+                        <th>任课教师工号</th>
+                    {% endif %}
+                </tr>
+                {% if  not inAdd%}
+                    </thead>
+                    <tbody>
+                    {% for eachCourse in course %}
+                        <tr>
+                            <td class="class_id">{{ eachCourse.idCourseInfo }}</td>
+                            <td>{{ eachCourse.cname }}</td>
+                            <td>{{ eachCourse.lhour }}</td>
+                            <td>{{ eachCourse.credit }}</td>
+                            <td>{{ eachCourse.semester }}</td>
+
+                            {% if role == 'admin' %}
+                                <td style="text-align: center">
+                                <button disabled type="submit" class="btn btn-danger delete" style="margin-left: 10px;background:#FFFBF0;border-color: #177CB0;" name="delete">
+                                    <a style="text-decoration: none;color:#177CB0" href={{ "course.html/?mode=Modify&courseId=%d"%(eachCourse.idCourseInfo) }}>
+                                    Modify</a>
+                                </button>
+
+                                <button disabled type="submit" class="btn btn-danger delete" style="margin-left: 10px;background:#FCEFE8;border-color: #177CB0;" name="delete">
+                                    <a style="text-decoration: none;color:#177CB0" href={{ "course.html/?courseId=%d"%(eachCourse.idCourseInfo) }}>
+                                    Delete</a>
+                                </button>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                {% else %}
+                    </thead>
+                    <tbody>
+                    <tr>
+                            {% if inModify %}
+                                <td><input disabled type="text" class="form-control" id="mcourseId"
+                                            name="mcourseId" value={{ courseId }}></td>
+                            {% else %}
+                                <td><input required type="text" class="form-control" id="courseId"
+                                           placeholder="请输入课程号" name="courseId"
+                                           onKeyPress="if (event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;"></td>
+                            {% endif %}
+                            <td><input required type="text" class="form-control" id="cname"
+                                    placeholder="请输入课程名" name="cname"></td>
+                            <td><input required type="text" class="form-control" id="lhour"
+                                    placeholder="请输入学时" name="lhour" 
+                                    onKeyPress="if (event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;"></td>
+                            <td><input required type="text" class="form-control" id="credit"
+                                    placeholder="请输入学分" name="credit" 
+                                    onKeyPress="if (event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;"> </td>
+                            <td><input required type="text" class="form-control" id="semester"
+                                    placeholder="请输入开课季度" name="semester"></td>
+                            <td><input required type="text" class="form-control" id="teacherId"
+                                    placeholder="请输入教师工号" name="teacherId" 
+                                    onKeyPress="if (event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;"></td>
+
+                    </tr>
+                    </tbody>
+                    {% if inModify %}
+                        <div style="text-align: right; margin-top: 10px;margin-bottom: 10px">
+                            <button type="submit" class="btn btn-info" style="margin-right: 10px" name="mfirmInfo">确定</button>
+                        </div>
+                    {% else %}
+                        <div style="text-align: right; margin-top: 10px;margin-bottom: 10px">
+                            <button type="submit" class="btn btn-info" style="margin-right: 10px" name="afirmInfo">确定</button>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </table>
+        </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Grade Information in Tables{% endblock %}
+
+{% block main %}
+    <style type="text/css">
+
+#info
+  {
+  font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+  width:100%;
+  border-collapse:collapse;
+  }
+
+#info td, #info th
+  {
+  font-size:1em;
+  border:1px solid #177CB0;
+  padding:3px 7px 2px 7px;
+  }
+
+#info th
+  {
+  font-size:1.1em;
+  text-align:left;
+  padding-top:5px;
+  padding-bottom:4px;
+  background-color:#99CCFF;
+  color:#ffffff;
+  }
+
+#info tr:nth-child(odd)
+    {
+    background-color:#E3F9FD;
+    }
+
+</style>
+    <div class="container">
+     <div class="form-group">
+            <label for="username-text">课程号</label>
+    <form role="form" action="{{ url('gradeinfo') }}" method="post">
+        {{ csrf_input }}
+        <input type="text" class="form-control" id="idCourseInfo"
+               placeholder="请输入您要查询的课程号" name="idCourseInfo" onKeyPress="if (event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;">
+        <div style="text-align: right; margin-top: 10px" >
+            <input type="submit" class="btn btn-info" style="width: 100px; " name="submit" value="提交">
+        </div>
+        <div class="table-responsive" style="padding-top: 30px">
+            <table class="table table-bordered" id="info">
+                <thead>
+                {% if tchCourses and stuCourses%}
+                    <tr>
+                        <th>课程ID</th>
+                        <th>课程</th>
+                        <th>学生</th>
+                        <th>成绩</th>
+                        <th>教师</th>
+                        {% if role != 'student' %}
+                            <th style="text-align: center">操作</th>
+                        {% endif %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for eachCourse in tchCourses %}
+                        {% for eachStu in stuCourses %}
+                            <tr>
+                                <td>{{ eachCourse.course_id }}</td>
+                                <td>{{ eachCourse.course.cname }}</td>
+                                <td>{{ eachStu.student.sname }}</td>
+                                <td>
+                                    {% if eachStu.grade >= 0 %}
+                                        {{ eachStu.grade }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ eachCourse.teacher.tname }}</td>
+                                {% if role != 'student' %}
+                                    <td style="text-align: center">
+                                        <button disabled type="submit" class="btn btn-info detail_show" name="modify" style="background:#FFFBF0;border-color: #177CB0;" >
+                                            <a style="text-decoration: none;color:#177CB0" href={{"tables.html/?mode=modify&stuId=%d&courseId=%d"%(eachStu.student_id, eachCourse.course_id)}}> Modify</a>
+                                        </button>
+                                        <button disabled type="submit" class="btn btn-danger delete" style="margin-left: 10px;background:#FCEFE8;border-color: #177CB0;" name="delete" >
+                                            <a style="text-decoration: none;color:#177CB0" href={{"tables.html/?mode=delete&stuId=%d&courseId=%d"%(eachStu.student_id, eachCourse.course_id)}}> Delete</a>
+                                        </button>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                    {% endfor %}
+                {% elif course%}
+
+                    <thead>
+                    <label for="username-text">可查询课程</label>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th>课程ID</th>
+                        <th>课程名称</th>
+                        <th>学时</th>
+                        <th>学分</th>
+                        <th>学期</th>
+                    </tr>
+                    {% for eachCourse in course %}
+                        <tr>
+
+                            <td class="class_id">{{ eachCourse.idCourseInfo }}</td>
+                            <td>{{ eachCourse.cname }}</td>
+                            <td>{{ eachCourse.lhour }}</td>
+                            <td>{{ eachCourse.credit }}</td>
+                            <td>{{ eachCourse.semester }}</td>
+                        </tr>
+                    {% endfor %}
+
+
+                    </tbody>
+
+                {% endif %}
+
+                {% if Prompt %}
+                    {{ Prompt }}
+                {% endif %}
+
+                {% if Modify %}
+                    <input type="text" class="form-control" id="newGrade"
+                            placeholder="请输入新成绩" name="newGrade">
+                     <div style="text-align: right; margin-top: 10px" >
+                    <button type="submit" class="btn btn-info" style="width: 100px;" name="modify">确定</button>
+                     </div>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+     </form>
+     </div>
+</div>
+
+
+{% endblock %}
